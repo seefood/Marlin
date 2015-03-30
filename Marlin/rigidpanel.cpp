@@ -255,7 +255,7 @@ static void lcd_sdcard_stop()
     quickStop();
     if(SD_FINISHED_STEPPERRELEASE)
     {
-        enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+        enquecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     }
     autotempShutdown();
 }
@@ -348,7 +348,7 @@ static void lcd_bed_level_doCurrent()
 	//	Home axes if not already homed
 	if ( !levelHomed )
 	{
-		enquecommand_P(PSTR("G28"));		//	Home axes
+		enquecommands_P(PSTR("G28"));		//	Home axes
 		levelHomed = true;
 		sprintf_P(cmd, PSTR("G0 Z%d F10000"), LEVEL_POINTS[0][0]);
 		enquecommand(cmd);
@@ -359,7 +359,7 @@ static void lcd_bed_level_doCurrent()
 		{
 			sprintf_P(cmd, PSTR("G0 X%d Y%d"), LEVEL_POINTS[levelStep+1][0], LEVEL_POINTS[levelStep+1][1]);
 			enquecommand(cmd);
-			enquecommand_P(PSTR("G0 Z0"));
+			enquecommands_P(PSTR("G0 Z0"));
 		}
 		else
 		{
@@ -372,7 +372,7 @@ static void lcd_bed_level_doCurrent()
 		{
 			sprintf_P(cmd, PSTR("G0 X%d Y%d"), LEVEL_EXTENTS[levelStep+1][0], LEVEL_EXTENTS[levelStep+1][1]);
 			enquecommand(cmd);
-			enquecommand_P(PSTR("G0 Z0"));
+			enquecommands_P(PSTR("G0 Z0"));
 		}
 		else
 		{
@@ -407,7 +407,7 @@ static void lcd_bed_level_moveHead_return()
 static void lcd_bed_level_disable_steppers()
 {
 	levelStep--;
-	enquecommand_P(PSTR("M84"));
+	enquecommands_P(PSTR("M84"));
 	levelHomed = false;
 	encoderPosition = 0;
 }
@@ -1000,7 +1000,7 @@ static void menu_action_submenu(menuFunc_t data)
 }
 static void menu_action_gcode(const char* pgcode)
 {
-    enquecommand_P(pgcode);
+    enquecommands_P(pgcode);
 }
 static void menu_action_function(menuFunc_t data)
 {
@@ -1014,7 +1014,7 @@ static void menu_action_sdfile(const char* filename, char* longFilename, uint8_t
     for(c = &cmd[4]; *c; c++)
         *c = tolower(*c);
     enquecommand(cmd);
-    enquecommand_P(PSTR("M24"));
+    enquecommands_P(PSTR("M24"));
     lcd_return_to_status();
 }
 static void menu_action_sddirectory(const char* filename, char* longFilename, uint8_t item)
