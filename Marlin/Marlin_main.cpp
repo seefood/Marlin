@@ -576,9 +576,9 @@ void setup()
   setup_filrunoutpin();
   setup_powerhold();
 
-  #ifdef STEPPER_RESET_FIX
-  disableStepperDrivers();
-  #endif
+  // #ifdef STEPPER_RESET_FIX
+  // disableStepperDrivers();
+  // #endif
 
   MYSERIAL.begin(BAUDRATE);
   SERIAL_PROTOCOLLNPGM("start");
@@ -636,9 +636,9 @@ void setup()
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
   #endif
 
-  #ifdef STEPPER_RESET_FIX
-  enableStepperDrivers();
-  #endif
+  // #ifdef STEPPER_RESET_FIX
+  // enableStepperDrivers();
+  // #endif
 
   #ifdef DIGIPOT_I2C
     digipot_i2c_init();
