@@ -1,5 +1,6 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
+
 #include "Configuration.h"
 
 #define LANGUAGE_CONCAT(M)       #M
@@ -10,21 +11,25 @@
 //
 //   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration.h"
 //   ==> ALSO TRY ALL AVAILABLE LANGUAGE OPTIONS
+// See also documentation/LCDLanguageFont.md
 
 // Languages
-// en English
-// pl Polish
-// fr French
-// de German
-// es Spanish
-// ru Russian
-// it Italian
-// pt Portuguese
-// fi Finnish
-// an Aragonese
-// nl Dutch
-// ca Catalan
-// eu Basque-Euskera
+// en       English
+// pl       Polish
+// fr       French
+// de       German
+// es       Spanish
+// ru       Russian
+// it       Italian
+// pt       Portuguese
+// pt-br    Portuguese (Brazil)
+// fi       Finnish
+// an       Aragonese
+// nl       Dutch
+// ca       Catalan
+// eu       Basque-Euskera
+// kana     Japanese
+// kana_utf Japanese
 
 #ifndef LANGUAGE_INCLUDE
   // pick your language from the list above
@@ -32,36 +37,45 @@
 #endif
 
 #define PROTOCOL_VERSION "1.0"
+#define FIRMWARE_URL "https://github.com/MarlinFirmware/Marlin"
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)
+  #undef FIRMWARE_URL
   #define MACHINE_NAME "Ultimaker"
   #define FIRMWARE_URL "http://firmware.ultimaker.com"
 #elif MB(RUMBA)
   #define MACHINE_NAME "Rumba"
-  #define FIRMWARE_URL "https://github.com/MarlinFirmware/Marlin"
 #elif MB(3DRAG)
   #define MACHINE_NAME "3Drag"
+  #undef FIRMWARE_URL
   #define FIRMWARE_URL "http://3dprint.elettronicain.it/"
+#elif MB(K8200)
+  #define MACHINE_NAME "K8200"
 #elif MB(5DPRINT)
   #define MACHINE_NAME "Makibox"
-  #define FIRMWARE_URL "https://github.com/MarlinFirmware/Marlin"
 #elif MB(SAV_MKI)
   #define MACHINE_NAME "SAV MkI"
+  #undef FIRMWARE_URL
   #define FIRMWARE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
+#elif MB(WITBOX)
+  #define MACHINE_NAME "WITBOX"
+  #undef FIRMWARE_URL
+  #define FIRMWARE_URL "http://www.bq.com/gb/downloads-witbox.html"
+#elif MB(HEPHESTOS)
+  #define MACHINE_NAME "HEPHESTOS"
+  #undef FIRMWARE_URL
+  #define FIRMWARE_URL "http://www.bq.com/gb/downloads-prusa-i3-hephestos.html"
 #elif MB(RIGIDBOT)
-	#define MACHINE_NAME "RigidBot"
-	#define FIRMWARE_URL "http://inventapart.com"
-#else
-  #ifdef CUSTOM_MENDEL_NAME
-    #define MACHINE_NAME CUSTOM_MENDEL_NAME
-  #else
-    #define MACHINE_NAME "Mendel"
-  #endif
-
-// Default firmware set to Mendel
-  #define FIRMWARE_URL "https://github.com/MarlinFirmware/Marlin"
+	#define MACHINE_NAME "RigidBot Community"
+	#define FIRMWARE_URL "https://github.com/guysoft/Marlin"
+#else // Default firmware set to Mendel
+  #define MACHINE_NAME "Mendel"
 #endif
 
+#ifdef CUSTOM_MENDEL_NAME
+  #undef MACHINE_NAME
+  #define MACHINE_NAME CUSTOM_MENDEL_NAME
+#endif
 
 #ifndef MACHINE_UUID
    #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
@@ -119,12 +133,14 @@
 #define MSG_UNKNOWN_COMMAND                 "Unknown command: \""
 #define MSG_ACTIVE_EXTRUDER                 "Active Extruder: "
 #define MSG_INVALID_EXTRUDER                "Invalid extruder"
+#define MSG_INVALID_SOLENOID                "Invalid solenoid"
 #define MSG_X_MIN                           "x_min: "
 #define MSG_X_MAX                           "x_max: "
 #define MSG_Y_MIN                           "y_min: "
 #define MSG_Y_MAX                           "y_max: "
 #define MSG_Z_MIN                           "z_min: "
 #define MSG_Z_MAX                           "z_max: "
+#define MSG_Z2_MAX                          "z2_max: "
 #define MSG_M119_REPORT                     "Reporting endstop status"
 #define MSG_ENDSTOP_HIT                     "TRIGGERED"
 #define MSG_ENDSTOP_OPEN                    "open"
@@ -155,6 +171,52 @@
 #define MSG_BABYSTEPPING_Z                  "Babystepping Z"
 #define MSG_SERIAL_ERROR_MENU_STRUCTURE     "Error in menu structure"
 
+#define MSG_ERR_EEPROM_WRITE                "Error writing to EEPROM!"
+
+// temperature.cpp strings
+#define MSG_PID_AUTOTUNE                    "PID Autotune"
+#define MSG_PID_AUTOTUNE_START              MSG_PID_AUTOTUNE " start"
+#define MSG_PID_AUTOTUNE_FAILED             MSG_PID_AUTOTUNE " failed!"
+#define MSG_PID_BAD_EXTRUDER_NUM            MSG_PID_AUTOTUNE_FAILED " Bad extruder number"
+#define MSG_PID_TEMP_TOO_HIGH               MSG_PID_AUTOTUNE_FAILED " Temperature too high"
+#define MSG_PID_TIMEOUT                     MSG_PID_AUTOTUNE_FAILED " timeout"
+#define MSG_BIAS                            " bias: "
+#define MSG_D                               " d: "
+#define MSG_T_MIN                           " min: "
+#define MSG_T_MAX                           " max: "
+#define MSG_KU                              " Ku: "
+#define MSG_TU                              " Tu: "
+#define MSG_CLASSIC_PID                     " Classic PID "
+#define MSG_KP                              " Kp: "
+#define MSG_KI                              " Ki: "
+#define MSG_KD                              " Kd: "
+#define MSG_OK_B                            "ok B:"
+#define MSG_OK_T                            "ok T:"
+#define MSG_AT                              " @:"
+#define MSG_PID_AUTOTUNE_FINISHED           MSG_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h"
+#define MSG_PID_DEBUG                       " PID_DEBUG "
+#define MSG_PID_DEBUG_INPUT                 ": Input "
+#define MSG_PID_DEBUG_OUTPUT                " Output "
+#define MSG_PID_DEBUG_PTERM                 " pTerm "
+#define MSG_PID_DEBUG_ITERM                 " iTerm "
+#define MSG_PID_DEBUG_DTERM                 " dTerm "
+#define MSG_HEATING_FAILED                  "Heating failed"
+#define MSG_EXTRUDER_SWITCHED_OFF           "Extruder switched off. Temperature difference between temp sensors is too high !"
+
+#define MSG_INVALID_EXTRUDER_NUM            " - Invalid extruder number !"
+#define MSG_THERMAL_RUNAWAY_STOP            "Thermal Runaway, system stopped! Heater_ID: "
+#define MSG_SWITCHED_OFF_MAX                " switched off. MAXTEMP triggered !!"
+#define MSG_MINTEMP_EXTRUDER_OFF            ": Extruder switched off. MINTEMP triggered !"
+#define MSG_MAXTEMP_EXTRUDER_OFF            ": Extruder" MSG_SWITCHED_OFF_MAX
+#define MSG_MAXTEMP_BED_OFF                 "Heated bed" MSG_SWITCHED_OFF_MAX
+
+// LCD Menu Messages
+
+#if !(defined( DISPLAY_CHARSET_HD44780_JAPAN ) || defined( DISPLAY_CHARSET_HD44780_WESTERN ) || defined( DISPLAY_CHARSET_HD44780_CYRILLIC ))
+  #define DISPLAY_CHARSET_HD44780_JAPAN
+#endif
+
 #include LANGUAGE_INCLUDE
+#include "language_en.h"
 
 #endif //__LANGUAGE_H

@@ -26,6 +26,9 @@ static unsigned char blink = 0;	// Variable for visualisation of fan rotation in
 #define FILE_SCROLL_START_DELAY	1000
 #define FILE_SCROLL_DELAY		400
 
+#define X_CENTER_POS   ((X_MIN_POS + X_MAX_POS) / 2)
+#define Y_CENTER_POS   ((Y_MIN_POS + Y_MAX_POS) / 2)
+
 void lcd_buttons_update();
 
 extern int plaPreheatHotendTemp;
