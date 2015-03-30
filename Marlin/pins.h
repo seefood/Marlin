@@ -116,7 +116,7 @@
   #include "pins_FELIX2.h"
 #elif MB(99)
   #include "pins_99.h"
-#elif MB(42)
+#elif MB(RIGIDBOARD)
   #include "pins_RIGIDBOARD.h"
 #else
   #error Unknown MOTHERBOARD value set in Configuration.h
