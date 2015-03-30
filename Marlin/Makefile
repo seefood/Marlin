@@ -37,7 +37,7 @@
 # from the commandline with "make HARDWARE_MOTHERBOARD=71" for example
 
 # This defined the board you are compiling for (see boards.h for the options)
-HARDWARE_MOTHERBOARD ?= 42
+HARDWARE_MOTHERBOARD ?= 420
 
 # Arduino source install directory, and version number
 # On most linuxes this will be /usr/share/arduino
@@ -113,7 +113,7 @@ HARDWARE_SUB_VARIANT ?= standard
 MCU              ?= atmega328p
 
 #Invent-A-Part RigidBoard
-else ifeq  ($(HARDWARE_MOTHERBOARD),42)
+else ifeq  ($(HARDWARE_MOTHERBOARD),420)
 HARDWARE_VARIANT ?= arduino
 MCU              ?= atmega2560
 
