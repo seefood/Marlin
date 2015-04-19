@@ -210,9 +210,9 @@ Here are some standard links for getting your machine calibrated:
 //  #define  DEFAULT_Kd 114
 
 // RigidBot
-#define DEFAULT_Kp 14.36
-#define DEFAULT_Ki 0.66
-#define DEFAULT_Kd 79.25
+#define DEFAULT_Kp 17.67
+#define DEFAULT_Ki 0.91
+#define DEFAULT_Kd 85.41
 
 // MakerGear
 //    #define  DEFAULT_Kp 7.0
@@ -223,6 +223,11 @@ Here are some standard links for getting your machine calibrated:
 //    #define  DEFAULT_Kp 63.0
 //    #define  DEFAULT_Ki 2.25
 //    #define  DEFAULT_Kd 440
+
+// RigidBot redesigned hot end
+//    #define  DEFAULT_Kp 14.36
+//    #define  DEFAULT_Ki 0.66
+//    #define  DEFAULT_Kd 79.25
 #endif // PIDTEMP
 
 //===========================================================================
@@ -252,9 +257,9 @@ Here are some standard links for getting your machine calibrated:
 #ifdef PIDTEMPBED
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-//    #define  DEFAULT_bedKp 10.00
-//    #define  DEFAULT_bedKi .023
-//    #define  DEFAULT_bedKd 305.4
+// #define DEFAULT_bedKp 402.65
+// #define DEFAULT_bedKi 79.27
+// #define DEFAULT_bedKd 511.32
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -341,7 +346,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // @section homing
 
 // coarse Endstop Settings
-//#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
 #ifndef ENDSTOPPULLUPS
   // fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined
@@ -507,7 +512,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
     #define LEFT_PROBE_BED_POSITION 15
     #define RIGHT_PROBE_BED_POSITION 170
     #define FRONT_PROBE_BED_POSITION 20
-    #define BACK_PROBE_BED_POSITION 170
+    #define BACK_PROBE_BED_POSITION 180
 
     #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 
