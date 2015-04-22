@@ -1,12 +1,15 @@
 // To ease merging with Marlin Development, I'm moving some of the Rigidbot settings out here to a seperate file.
 
+undef STRING_CONFIG_H_AUTHOR
+#define STRING_CONFIG_H_AUTHOR "(Seefood@Github, RigidBot config)"
+
 #define RIGIDBOT
 #define RIGIDBOT_SIZE 1 // 1 for regular, 2 for big
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,250000]
 #undef BAUDRATE
-#define BAUDRATE 230400
+#define BAUDRATE 230400 // seems to work while 250000 doesn't.
 
 #undef TEMP_SENSOR_0 TEMP_SENSOR_1 TEMP_SENSOR_2 TEMP_SENSOR_3 TEMP_SENSOR_BED
 #define TEMP_SENSOR_0 1
