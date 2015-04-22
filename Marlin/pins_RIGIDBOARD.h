@@ -76,18 +76,7 @@
 #define LCD_PINS_D6          27
 #define LCD_PINS_D7          29
 
-#ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-  #define BEEPER 37
-
-  #define BTN_EN1 31
-  #define BTN_EN2 33
-  #define BTN_ENC 35
-
-  #define SDCARDDETECT 22
-
-  #define KILL_PIN 32
-
-#elif defined(RIGIDPANEL)
+#ifdef RIGIDPANEL
   #define BEEPER -1
 
   #define BTN_UP  37
@@ -103,7 +92,7 @@
 
   #define KILL_PIN -1
 
-#else
+#else //RIGIDPANEL
   #define BEEPER 33  // Beeper on AUX-4
   #define KILL_PIN -1
 
@@ -132,14 +121,14 @@
     #define SDCARDDETECT -1  // Ramps does not use this port
   #endif
 
-#endif
+#endif //RIGIDPANEL
 
 #ifndef SDSUPPORT
   // these pins are defined in the SD library if building with SD support
-  #define MAX_SCK_PIN          52
-  #define MAX_MISO_PIN         50
-  #define MAX_MOSI_PIN         51
+  #define SCK_PIN          52
+  #define MISO_PIN         50
+  #define MOSI_PIN         51
   #define MAX6675_SS       53
 #else
   #define MAX6675_SS       49
-#endif
+#endif //SDSUPPORT

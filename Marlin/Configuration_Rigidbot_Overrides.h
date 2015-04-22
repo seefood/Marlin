@@ -1,6 +1,6 @@
 // To ease merging with Marlin Development, I'm moving some of the Rigidbot settings out here to a seperate file.
 
-undef STRING_CONFIG_H_AUTHOR
+#undef STRING_CONFIG_H_AUTHOR
 #define STRING_CONFIG_H_AUTHOR "(Seefood@Github, RigidBot config)"
 
 #define RIGIDBOT
