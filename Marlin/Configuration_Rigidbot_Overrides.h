@@ -5,8 +5,15 @@
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,250000]
-//#undef BAUDRATE
-//#define BAUDRATE 115200
+#undef BAUDRATE
+#define BAUDRATE 230400
+
+#undef TEMP_SENSOR_0 TEMP_SENSOR_1 TEMP_SENSOR_2 TEMP_SENSOR_3 TEMP_SENSOR_BED
+#define TEMP_SENSOR_0 1
+#define TEMP_SENSOR_1 1
+#define TEMP_SENSOR_2 0
+#define TEMP_SENSOR_3 0
+#define TEMP_SENSOR_BED 1
 
 // RigidBot, from pid autotune
 #define DEFAULT_Kp 14.36

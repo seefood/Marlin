@@ -2428,23 +2428,6 @@ inline void gcode_G28() {
           xStop = -1;
           xInc = -1;
         }
-      }
-      if (IS_SD_PRINTING)
-        LCD_MESSAGEPGM(MSG_RESUMING);
-      else
-        LCD_MESSAGEPGM(WELCOME_MSG);
-    }
-    break;
-//#endif
-    case 17: // M17 - Enable/Power all stepper motors
-        LCD_MESSAGEPGM(MSG_NO_MOVE);
-        enable_x();
-        enable_y();
-        enable_z();
-        enable_e0();
-        enable_e1();
-        enable_e2();
-      break;
 
         #ifndef DELTA
           // If do_topography_map is set then don't zig-zag. Just scan in one direction.
