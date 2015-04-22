@@ -68,7 +68,7 @@ U8GLIB		   ?= 0
 
 # The RigidPanel LCD controller displaces the original ultralcd.cpp/.h implementation entirely
 # Unless you have a RigidPanel from Invent-A-Part, leave this at 0
-RIGIDPANEL ?= 1
+RIGIDPANEL ?= 0
 
 ############################################################################
 # Below here nothing should be changed...

@@ -68,9 +68,11 @@
   #ifndef FIRMWARE_URL
     #define FIRMWARE_URL "https://github.com/OpenBeamUSA/Marlin/"
   #endif
-#elif MB(RIGIDBOT)
-  #define MACHINE_NAME "RigidBot Community"
-  #define FIRMWARE_URL "https://github.com/guysoft/Marlin"
+#elif MB(RIGIDBOARD)
+  #define MACHINE_NAME "RigidBot"
+  #ifndef FIRMWARE_URL
+    #define FIRMWARE_URL "http://inventapart.com"
+  #endif
 #else
   #ifndef MACHINE_NAME
     #define MACHINE_NAME "3D Printer"
