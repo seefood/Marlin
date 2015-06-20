@@ -40,32 +40,28 @@
 HARDWARE_MOTHERBOARD ?= 42
 
 # Arduino source install directory, and version number
-ARDUINO_INSTALL_DIR  ?= /Applications/Arduino.app/Contents/Resources/Java
+# On most linuxes this will be /usr/share/arduino
+ARDUINO_INSTALL_DIR  ?= /usr/share/arduino
 ARDUINO_VERSION      ?= 105
 
 # You can optionally set a path to the avr-gcc tools. Requires a trailing slash. (ex: /usr/local/avr-gcc/bin)
-AVR_TOOLS_PATH ?= /Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/
+AVR_TOOLS_PATH ?=
 
 #Programmer configuration
 UPLOAD_RATE        ?= 115200
-AVRDUDE_PROGRAMMER ?= arduino
+AVRDUDE_PROGRAMMER ?= wiring
+# on most linuxes this will be /dev/ttyACM0 or /dev/ttyACM1 
 UPLOAD_PORT        ?= /dev/arduino
 
-#Directory used to build files in, contains all the build files, from object files to the final hex file.
+#Directory used to build files in, contains all the build files, from object files to the final hex file
+#on linux it is best to put an absolute path like /home/username/tmp .
 BUILD_DIR          ?= applet
 
 # This defines whether Liquid_TWI2 support will be built
-LIQUID_TWI2 ?= 0
+LIQUID_TWI2        ?= 0
 
-# This defines if Wire is needed
-WIRE ?= 0
-
-# This defines if U8glib is needed, for the RepRap Discount Full Graphic LCD for example
-U8GLIB		   ?= 0
-
-# The RigidPanel LCD controller displaces the original ultralcd.cpp/.h implementation entirely
-# Unless you have a RigidPanel from Invent-A-Part, leave this at 0
-RIGIDPANEL ?= 0
+# this defines if Wire is needed
+WIRE               ?= 0
 
 ############################################################################
 # Below here nothing should be changed...
@@ -233,7 +229,7 @@ TARGET = $(notdir $(CURDIR))
 VPATH = .
 VPATH += $(BUILD_DIR)
 VPATH += $(HARDWARE_SRC)
-ifeq ($(HARDWARE_VARIANT), arduino)
+ifeq ($(HARDWARE_VARIANT), $(filter $(HARDWARE_VARIANT),arduino Teensy))
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/LiquidCrystal
 VPATH += $(ARDUINO_INSTALL_DIR)/libraries/SPI
 ifeq ($(LIQUID_TWI2), 1)
@@ -279,9 +275,9 @@ VPATH += $(ARDUINO_INSTALL_DIR)/hardware/teensy/cores/teensy
 endif
 CXXSRC = WMath.cpp WString.cpp Print.cpp Marlin_main.cpp	\
 	MarlinSerial.cpp Sd2Card.cpp SdBaseFile.cpp SdFatUtil.cpp	\
-	SdFile.cpp SdVolume.cpp motion_control.cpp planner.cpp		\
-	stepper.cpp temperature.cpp cardreader.cpp ConfigurationStore.cpp \
-	watchdog.cpp SPI.cpp Servo.cpp Tone.cpp ultralcd.cpp digipot_mcp4451.cpp \
+	SdFile.cpp SdVolume.cpp planner.cpp stepper.cpp \
+	temperature.cpp cardreader.cpp configuration_store.cpp \
+	watchdog.cpp SPI.cpp servo.cpp Tone.cpp ultralcd.cpp digipot_mcp4451.cpp \
 	vector_3.cpp qr_solve.cpp
 ifeq ($(LIQUID_TWI2), 0)
 CXXSRC += LiquidCrystal.cpp
@@ -377,15 +373,15 @@ LDFLAGS = -lm
 
 # Programming support using avrdude. Settings and variables.
 AVRDUDE_PORT = $(UPLOAD_PORT)
-AVRDUDE_WRITE_FLASH = -U flash:w:$(BUILD_DIR)/$(TARGET).hex:i
+AVRDUDE_WRITE_FLASH = -Uflash:w:$(BUILD_DIR)/$(TARGET).hex:i
 ifeq ($(shell uname -s), Linux)
 AVRDUDE_CONF = $(ARDUINO_INSTALL_DIR)/hardware/tools/avrdude.conf
 else
 AVRDUDE_CONF = $(ARDUINO_INSTALL_DIR)/hardware/tools/avr/etc/avrdude.conf
 endif
-AVRDUDE_FLAGS = -D -C $(AVRDUDE_CONF) \
-	-p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) \
-	-b $(UPLOAD_RATE)
+AVRDUDE_FLAGS = -q -q -D -C$(AVRDUDE_CONF) \
+	-p$(MCU) -P$(AVRDUDE_PORT) -c$(AVRDUDE_PROGRAMMER) \
+	-b$(UPLOAD_RATE)
 
 # Define all object files.
 OBJ = ${patsubst %.c, $(BUILD_DIR)/%.o, ${SRC}}
