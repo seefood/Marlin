@@ -255,7 +255,7 @@ static void lcd_sdcard_stop()
     quickStop();
     if(SD_FINISHED_STEPPERRELEASE)
     {
-        enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+        enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     }
     autotempShutdown();
 }
@@ -344,22 +344,22 @@ static void lcd_bed_level_doCurrent()
 {
 	//	Always move up a little first, and set high speed
 	sprintf_P(cmd, PSTR("G0 Z%d F10000"), LEVEL_POINTS[0][0]);
-	enquecommand(cmd);
+	enqueuecommands_P(cmd);
 	//	Home axes if not already homed
 	if ( !levelHomed )
 	{
-		enquecommand_P(PSTR("G28"));		//	Home axes
+		enqueuecommands_P(PSTR("G28"));		//	Home axes
 		levelHomed = true;
 		sprintf_P(cmd, PSTR("G0 Z%d F10000"), LEVEL_POINTS[0][0]);
-		enquecommand(cmd);
+		enqueuecommands_P(cmd);
 	}
 	if ( levelType == 0 )
 	{
 		if ( levelStep < LEVEL_POINTS[0][1] )
 		{
 			sprintf_P(cmd, PSTR("G0 X%d Y%d"), LEVEL_POINTS[levelStep+1][0], LEVEL_POINTS[levelStep+1][1]);
-			enquecommand(cmd);
-			enquecommand_P(PSTR("G0 Z0"));
+			enqueuecommands_P(cmd);
+			enqueuecommands_P(PSTR("G0 Z0"));
 		}
 		else
 		{
@@ -371,8 +371,8 @@ static void lcd_bed_level_doCurrent()
 		if ( levelStep < LEVEL_EXTENTS[0][1] )
 		{
 			sprintf_P(cmd, PSTR("G0 X%d Y%d"), LEVEL_EXTENTS[levelStep+1][0], LEVEL_EXTENTS[levelStep+1][1]);
-			enquecommand(cmd);
-			enquecommand_P(PSTR("G0 Z0"));
+			enqueuecommands_P(cmd);
+			enqueuecommands_P(PSTR("G0 Z0"));
 		}
 		else
 		{
@@ -394,9 +394,9 @@ static void lcd_bed_level_moveHead()
 {
 	moveHead = true;
 	sprintf_P(cmd, PSTR("G0 Z%d F10000"), BED_LEVEL_Z_LIFT);
-	enquecommand(cmd);
+	enqueuecommands_P(cmd);
 	sprintf_P(cmd, PSTR("G0 X%d Y%d"), X_CENTER_POS, Y_CENTER_POS);
-	enquecommand(cmd);
+	enqueuecommands_P(cmd);
 	encoderPosition = 0;
 }
 static void lcd_bed_level_moveHead_return()
@@ -407,7 +407,7 @@ static void lcd_bed_level_moveHead_return()
 static void lcd_bed_level_disable_steppers()
 {
 	levelStep--;
-	enquecommand_P(PSTR("M84"));
+	enqueuecommands_P(PSTR("M84"));
 	levelHomed = false;
 	encoderPosition = 0;
 }
@@ -1000,7 +1000,7 @@ static void menu_action_submenu(menuFunc_t data)
 }
 static void menu_action_gcode(const char* pgcode)
 {
-    enquecommand_P(pgcode);
+    enqueuecommands_P(pgcode);
 }
 static void menu_action_function(menuFunc_t data)
 {
@@ -1013,8 +1013,8 @@ static void menu_action_sdfile(const char* filename, char* longFilename, uint8_t
     sprintf_P(cmd, PSTR("M23 %s"), filename);
     for(c = &cmd[4]; *c; c++)
         *c = tolower(*c);
-    enquecommand(cmd);
-    enquecommand_P(PSTR("M24"));
+    enqueuecommands_P(cmd);
+    enqueuecommands_P(PSTR("M24"));
     lcd_return_to_status();
 }
 static void menu_action_sddirectory(const char* filename, char* longFilename, uint8_t item)
@@ -1423,6 +1423,22 @@ void copy_and_scalePID_d()
 {
   Kd = scalePID_d(raw_Kd);
   updatePID();
+}
+
+// Adding back Marlin_main stuff removed for 1.1
+void enqueuecommands_P(const char *cmd)
+{
+  if(buflen < BUFSIZE)
+  {
+    //this is dangerous if a mixing of serial and this happens
+    strcpy_P(&(cmdbuffer[bufindw][0]),cmd);
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPGM(MSG_Enqueueing);
+    SERIAL_ECHO(cmdbuffer[bufindw]);
+    SERIAL_ECHOLNPGM("\"");
+    bufindw= (bufindw + 1)%BUFSIZE;
+    buflen += 1;
+  }
 }
 
 #endif //RIGIDPANEL

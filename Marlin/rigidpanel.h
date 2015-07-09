@@ -72,4 +72,8 @@ char *ftostr5(const float &x);
 char *ftostr51(const float &x);
 char *ftostr52(const float &x);
 
+// Added stuff removed from Marlin.* between 1.02-1.1
+
+void enqueuecommands_P(const char *cmd); //put an ASCII command at the end of the current buffer, read from flash
+
 #endif //RIGIDPANEL_H
