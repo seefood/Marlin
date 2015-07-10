@@ -4,54 +4,66 @@
 #include "Marlin.h"
 
 #ifdef RIGIDPANEL
+  int lcd_strlen(char *s);
+  int lcd_strlen_P(const char *s);
+  void lcd_update();
+  void lcd_init();
+  bool lcd_hasstatus();
+  void lcd_setstatus(const char* message);
+  void lcd_setstatuspgm(const char* message);
+  void lcd_setalertstatuspgm(const char* message);
+  void lcd_reset_alert_level();
+  bool lcd_detected(void);
 
-void lcd_update();
-void lcd_init();
-void lcd_setstatus(const char* message);
-void lcd_setstatuspgm(const char* message);
-void lcd_setalertstatuspgm(const char* message);
-void lcd_reset_alert_level();
-bool lcd_detected(void);
+  static unsigned char blink = 0;	// Variable for visualisation of fan rotation in GLCD
 
-static unsigned char blink = 0;	// Variable for visualisation of fan rotation in GLCD
+  #define HIDE_BACK_MENUS			//	Uncomment to hide back menus (left button will still trigger them)
 
-#define HIDE_BACK_MENUS			//	Uncomment to hide back menus (left button will still trigger them)
+  #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
+  #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
 
-#define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
-#define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
+  #define LCD_UPDATE_INTERVAL 100
+  #define LCD_STATUS_UPDATE_INTERVAL 1000
+  #define LCD_TIMEOUT_TO_STATUS 15000
+  #define FILE_SCROLL_START_DELAY	1000
+  #define FILE_SCROLL_DELAY		400
 
-#define LCD_UPDATE_INTERVAL 100
-#define LCD_STATUS_UPDATE_INTERVAL 1000
-#define LCD_TIMEOUT_TO_STATUS 30000
-#define FILE_SCROLL_START_DELAY	1000
-#define FILE_SCROLL_DELAY		400
+  void lcd_buttons_update();
+  extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
 
-void lcd_buttons_update();
+  extern int plaPreheatHotendTemp;
+  extern int plaPreheatHPBTemp;
+  extern int plaPreheatFanSpeed;
+  extern int absPreheatHotendTemp;
+  extern int absPreheatHPBTemp;
+  extern int absPreheatFanSpeed;
 
-extern int plaPreheatHotendTemp;
-extern int plaPreheatHPBTemp;
-extern int plaPreheatFanSpeed;
-
-extern int absPreheatHotendTemp;
-extern int absPreheatHPBTemp;
-extern int absPreheatFanSpeed;
+  extern bool cancel_heatup;
   
-void lcd_buzz(long duration,uint16_t freq);
-bool lcd_clicked();
-void lcd_ignore_click(bool b=true);
+  #ifdef FILAMENT_LCD_DISPLAY
+    extern millis_t previous_lcd_status_ms;
+  #endif
+
+  void lcd_buzz(long duration,uint16_t freq);
+  void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
+  bool lcd_clicked();
+
+  void lcd_ignore_click(bool b=true);
 
 #else  //RIGIDPANEL
  //no LCD
   FORCE_INLINE void lcd_update() {}
   FORCE_INLINE void lcd_init() {}
+  FORCE_INLINE bool lcd_hasstatus() { return false; }
   FORCE_INLINE void lcd_setstatus(const char* message) {}
+  FORCE_INLINE void lcd_setstatuspgm(const char* message, const uint8_t level=0) {}
   FORCE_INLINE void lcd_buttons_update() {}
   FORCE_INLINE void lcd_reset_alert_level() {}
-  FORCE_INLINE void lcd_buzz(long duration,uint16_t freq) {}
+  FORCE_INLINE void lcd_buzz(long duration, uint16_t freq) {}
   FORCE_INLINE bool lcd_detected(void) { return true; }
 
-  #define LCD_MESSAGEPGM(x) 
-  #define LCD_ALERTMESSAGEPGM(x) 
+  #define LCD_MESSAGEPGM(x) do{}while(0)
+  #define LCD_ALERTMESSAGEPGM(x) do{}while(0)
 
 #endif //RIGIDPANEL
 
@@ -71,9 +83,5 @@ char *ftostr32sp(const float &x); // remove zero-padding from ftostr32
 char *ftostr5(const float &x);
 char *ftostr51(const float &x);
 char *ftostr52(const float &x);
-
-// Added stuff removed from Marlin.* between 1.02-1.1
-
-void enqueuecommands_P(const char *cmd); //put an ASCII command at the end of the current buffer, read from flash
 
 #endif //RIGIDPANEL_H
