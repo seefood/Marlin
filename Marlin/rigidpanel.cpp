@@ -171,15 +171,9 @@ static void lcd_status_screen();
   #define MENU_ITEM(type, label, args...) do { \
     if (_menuItemNr == _lineNr) { \
       itemSelected = encoderLine == _menuItemNr; \
-	  if (lcdDrawUpdate) { \
-        const char* _label_pstr = PSTR(label); \
-        if ((encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) == _menuItemNr) { \
-          lcd_implementation_drawmenu_ ## type ## _selected (_drawLineNr, _label_pstr , ## args ); \
-        }else{\
-          lcd_implementation_drawmenu_ ## type (_drawLineNr, _label_pstr , ## args ); \
-        }\
-      }\
-    if ((LCD_CLICKED || buttons&B_RI) && (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) == _menuItemNr) {\
+      if (lcdDrawUpdate) \
+        lcd_implementation_drawmenu_ ## type(itemSelected, _drawLineNr, PSTR(label), ## args); \
+      if (wasClicked && itemSelected) { \
         lcd_quick_feedback(); \
         menu_action_ ## type(args); \
         return; \
@@ -211,21 +205,21 @@ static void lcd_status_screen();
       _menuItemNr++; \
     } while(0)
   #endif //ENCODER_RATE_MULTIPLIER
-#define MENU_ITEM_BACK_HIDDEN(type, label, args...) do { \
-  if ( buttons&B_LE ) { \
-    lcd_quick_feedback(); \
-    menu_action_ ## type ( args ); \
-    return;\
-  } \
-} while(0)
-  #ifdef HIDE_BACK_MENUS
-    #define MENU_ITEM_BACK	MENU_ITEM_BACK_HIDDEN
-  #else
-    #define MENU_ITEM_BACK(type, label, args...) do { \
-	  MENU_ITEM_BACK_HIDDEN(type, label, ## args); \
-      MENU_ITEM(type, label, ## args); \
-    } while(0)
-  #endif //HIDE_BACK_MENUS
+// #define MENU_ITEM_BACK_HIDDEN(type, label, args...) do { \
+//   if ( buttons&B_LE ) { \
+//     lcd_quick_feedback(); \
+//     menu_action_ ## type ( args ); \
+//     return;\
+//   } \
+// } while(0)
+//   #ifdef HIDE_BACK_MENUS
+//     #define MENU_ITEM_BACK	MENU_ITEM_BACK_HIDDEN
+//   #else
+//     #define MENU_ITEM_BACK(type, label, args...) do { \
+// 	  MENU_ITEM_BACK_HIDDEN(type, label, ## args); \
+//       MENU_ITEM(type, label, ## args); \
+//     } while(0)
+//   #endif //HIDE_BACK_MENUS
 
   #define MENU_ITEM_DUMMY() do { _menuItemNr++; } while(0)
   #define MENU_ITEM_EDIT(type, label, args...) MENU_ITEM(setting_edit_ ## type, label, PSTR(label), ## args)
@@ -238,8 +232,8 @@ static void lcd_status_screen();
     #define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## args)
   #endif //!ENCODER_RATE_MULTIPLIER
   #define END_MENU() \
-      if (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; \
-      if ((uint8_t)(encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
+      if (encoderLine >= _menuItemNr) { encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; }\
+      if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
       } } while(0)
 
   /** Used variables to keep track of the menu */
@@ -302,7 +296,8 @@ static void lcd_goto_menu(menuFunc_t menu, const bool feedback=false, const uint
  * "Info Screen"
  *
  * This is very display-dependent, so the lcd implementation draws this.
- * It's up to the implementation specific part to show what is needed. As this is very display dependant
+ * It's up to the implementation specific part to show what is needed.
+ * As this is very display dependant
  */
 
 static void lcd_status_screen() {
@@ -1360,10 +1355,33 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
  * Audio feedback for controller clicks
  *
  */
-static void lcd_quick_feedback() {
-    lcdDrawUpdate = 2;
-    next_button_update_ms = millis() + 500;
-    lcd_implementation_quick_feedback();
+void lcd_quick_feedback() {
+  lcdDrawUpdate = 2;
+  next_button_update_ms = millis() + 500;
+    
+  #ifdef LCD_USE_I2C_BUZZER
+    #ifndef LCD_FEEDBACK_FREQUENCY_HZ
+      #define LCD_FEEDBACK_FREQUENCY_HZ 100
+    #endif
+    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS (1000/6)
+    #endif    
+    lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
+  #elif defined(BEEPER) && BEEPER >= 0
+    #ifndef LCD_FEEDBACK_FREQUENCY_HZ
+      #define LCD_FEEDBACK_FREQUENCY_HZ 5000
+    #endif
+    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
+    #endif
+    lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
+  #else
+    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
+    #endif
+    delay(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
+  #endif
+  lcd_implementation_quick_feedback();
 }
 
 /**

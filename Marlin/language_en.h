@@ -9,7 +9,7 @@
 #define LANGUAGE_EN_H
 
 #if !( defined(MAPPER_NON)|| defined(MAPPER_C2C3)|| defined(MAPPER_D0D1)|| defined(MAPPER_D0D1_MOD)|| defined(MAPPER_E382E383) )
-  #define MAPPER_NON         // For direct asci codes
+  #define MAPPER_NON         // For direct ASCII codes
 #endif
 
 //#define SIMULATE_ROMFONT //Comment in to see what is seen on the character based displays

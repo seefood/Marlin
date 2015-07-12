@@ -105,7 +105,7 @@ extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
     #define LCD_CLASS LiquidCrystalFast
   #endif  
   LiquidCrystalFast lcd(LCD_PINS_RS, LCD_PINS_ENABLE, LCD_PINS_D4, LCD_PINS_D5,LCD_PINS_D6,LCD_PINS_D7);  //RS,Enable,D4,D5,D6,D7
-#endif
+#endif //defined(LCD_I2C_TYPE_PCF8575)
 
 /* Custom characters defined in the first 8 characters of the LCD */
 #define LCD_STR_BEDTEMP     "\x00"
@@ -222,7 +222,7 @@ static void lcd_implementation_init()
     
 #else
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-#endif
+#endif //LCDI2C_TYPE_PCF8575
 
     lcd.createChar(LCD_STR_BEDTEMP[0], bedTemp);
     lcd.createChar(LCD_STR_DEGREE[0], degree);
@@ -238,14 +238,21 @@ static void lcd_implementation_init()
 static void lcd_implementation_clear() { lcd.clear(); }
 
 /* Arduino < 1.0.0 is missing a function to print PROGMEM strings, so we need to implement our own */
-static void lcd_printPGM(const char* str)
-{
-    char c;
-    while((c = pgm_read_byte(str++)) != '\0')
-    {
-        lcd.write(c);
-    }
+char lcd_printPGM(const char* str) {
+  char c, n = 0;
+  while ((c = pgm_read_byte(str++))) n += c;
+  return n;
 }
+
+char lcd_print(char* str) {
+  char c, n = 0;
+  unsigned char i = 0;
+  while ((c = str[i++])) n += c;
+  return n;
+}
+
+unsigned lcd_print(char c) { return c; }
+
 /*
 Possible status screens:
 16x2   |0123456789012345|
@@ -303,6 +310,8 @@ static void lcd_implementation_status_screen()
   if (tTarget < 10)
     lcd.print(' ');
 
+  #if LCD_WIDTH < 20
+
     //
     // Hotend 0 Temperature
     //
@@ -312,50 +321,94 @@ static void lcd_implementation_status_screen()
     // Hotend 1 or Bed Temperature
     //
     #if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
-    //If we have an 2nd extruder or heated bed, show that below
-    lcd.setCursor(0, 1);
-#  if EXTRUDERS > 1
-    tHotend = int(degHotend(1) + 0.5);
-    tTarget = int(degTargetHotend(1) + 0.5);
-    lcd.print(LCD_STR_THERMOMETER[0]);
-#  else//Heated bed
-    tHotend=int(degBed() + 0.5);
-    tTarget=int(degTargetBed() + 0.5);
-    lcd.print(LCD_STR_BEDTEMP[0]);
-#  endif
-    lcd.print(itostr3(tHotend));
-    lcd.print('/');
-    lcd.print(itostr3left(tTarget));
-    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-    if (tTarget < 10)
-        lcd.print(' ');
-# endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 
-//Lines 2 for 4 line LCD
-#  if EXTRUDERS > 1 && TEMP_SENSOR_BED != 0
-    //If we both have a 2nd extruder and a heated bed, show the heated bed temp on the 2nd line on the left, as the first line is filled with extruder temps
-    tHotend=int(degBed() + 0.5);
-    tTarget=int(degTargetBed() + 0.5);
+      lcd.setCursor(8, 0);
+      #if EXTRUDERS > 1
+        lcd.print(LCD_STR_THERMOMETER[0]);
+        LCD_TEMP_ONLY(degHotend(1), degTargetHotend(1));
+      #else
+        lcd.print(LCD_STR_BEDTEMP[0]);
+        LCD_TEMP_ONLY(degBed(), degTargetBed());
+      #endif
 
-    lcd.setCursor(11, 0);
-    lcd.print(LCD_STR_BEDTEMP[0]);
-    lcd.print(itostr3(tHotend));
-    lcd.print('/');
-    lcd.print(itostr3left(tTarget));
-    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-    if (tTarget < 10)
-        lcd.print(' ');
-#  else
-    lcd.setCursor(11,0);
-    lcd.print('X');
-    lcd.print(ftostr3(current_position[X_AXIS]));
-    lcd_printPGM(PSTR(" Y"));
-    lcd.print(ftostr3(current_position[Y_AXIS]));
-#  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
+    #endif // EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 
+  #else // LCD_WIDTH >= 20
+
+    //
+    // Hotend 0 Temperature
+    //
+    LCD_TEMP(degHotend(0), degTargetHotend(0), LCD_STR_THERMOMETER[0]);
+
+    //
+    // Hotend 1 or Bed Temperature
+    //
+    #if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
+      lcd.setCursor(10, 0);
+      #if EXTRUDERS > 1
+        LCD_TEMP(degHotend(1), degTargetHotend(1), LCD_STR_THERMOMETER[0]);
+      #else
+        LCD_TEMP(degBed(), degTargetBed(), LCD_STR_BEDTEMP[0]);
+      #endif
+
+    #endif  // EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
+
+  #endif // LCD_WIDTH >= 20
+
+  //
+  // Line 2
+  //
+
+  #if LCD_HEIGHT > 2
+
+    #if LCD_WIDTH < 20
+
+      #ifdef SDSUPPORT
+        lcd.setCursor(0, 2);
+        lcd_printPGM(PSTR("SD"));
+        if (IS_SD_PRINTING)
+          lcd.print(itostr3(card.percentDone()));
+        else
+          lcd_printPGM(PSTR("---"));
+          lcd.print('%');
+      #endif // SDSUPPORT
+
+    #else // LCD_WIDTH >= 20
+
+      lcd.setCursor(0, 1);
+
+      #if EXTRUDERS > 1 && TEMP_SENSOR_BED != 0
+
+        // If we both have a 2nd extruder and a heated bed,
+        // show the heated bed temp on the left,
+        // since the first line is filled with extruder temps
+        LCD_TEMP(degBed(), degTargetBed(), LCD_STR_BEDTEMP[0]);
+
+      #else
+
+        lcd.print('X');
+        if (axis_known_position[X_AXIS])
+          lcd.print(ftostr3(current_position[X_AXIS]));
+        else
+          lcd_printPGM(PSTR("---"));
+
+        lcd_printPGM(PSTR("  Y"));
+        if (axis_known_position[Y_AXIS])
+          lcd.print(ftostr3(current_position[Y_AXIS]));
+        else
+          lcd_printPGM(PSTR("---"));
+
+      #endif // EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
+
+    #endif // LCD_WIDTH >= 20
+
+    lcd.setCursor(LCD_WIDTH - 8, 1);
     lcd.setCursor(11, 1);
     lcd.print('Z');
-    lcd.print(ftostr32(current_position[Z_AXIS]));
+    if (axis_known_position[Z_AXIS])
+      lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
+    else
+      lcd_printPGM(PSTR("---.--"));
 
   #endif // LCD_HEIGHT > 2
 
