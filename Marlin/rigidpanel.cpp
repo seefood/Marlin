@@ -34,6 +34,10 @@ int absPreheatFanSpeed;
 
 /* !Configuration settings */
 
+
+#define X_CENTER_POS ((X_MIN_POS + X_MAX_POS) / 2)
+#define Y_CENTER_POS ((Y_MIN_POS + Y_MAX_POS) / 2)    
+
 // Function pointer to menu functions.
 typedef void (*menuFunc_t)();
 

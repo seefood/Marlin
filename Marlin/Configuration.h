@@ -40,7 +40,7 @@ Here are some standard links for getting your machine calibrated:
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION "1.0.3 dev"
+#define STRING_VERSION "1.1 dev"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)" // Who made the changes.
 #define STRING_SPLASH_LINE1 "v" STRING_VERSION // will be shown during bootup in line 1
@@ -56,7 +56,7 @@ Here are some standard links for getting your machine calibrated:
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,230400,250000]
-#define BAUDRATE 250000
+#define BAUDRATE 230400 //For some odd reason, I can't make 250000 work on the RigidBoard
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices
@@ -255,7 +255,6 @@ Here are some standard links for getting your machine calibrated:
 
 #ifdef PIDTEMPBED
     #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER //limit for the integral term
-
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
 #define DEFAULT_bedKp 355
@@ -320,6 +319,8 @@ Here are some standard links for getting your machine calibrated:
 // Invent-A-Part RigidBot
 #define RIGIDBOT
 #define RIGIDBOT_SIZE 1
+
+// Other predefined mechanical settings go here...
 // Enable this option for Toshiba steppers
 // #define CONFIG_STEPPERS_TOSHIBA
 
@@ -337,6 +338,15 @@ Here are some standard links for getting your machine calibrated:
   // #define ENDSTOPPULLUP_YMIN
   // #define ENDSTOPPULLUP_ZMIN
   // #define ENDSTOPPULLUP_ZPROBE
+#endif
+
+#ifdef ENDSTOPPULLUPS
+  #define ENDSTOPPULLUP_XMAX
+  #define ENDSTOPPULLUP_YMAX
+  #define ENDSTOPPULLUP_ZMAX
+  #define ENDSTOPPULLUP_XMIN
+  #define ENDSTOPPULLUP_YMIN
+  #define ENDSTOPPULLUP_ZMIN
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
@@ -369,6 +379,8 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
 #define DISABLE_X false
 #define DISABLE_Y false
 #define DISABLE_Z false
+#define DISABLE_E false
+#define DISABLE_INACTIVE_EXTRUDER true
 
 // @section extruder
 
@@ -385,8 +397,8 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
 // @section extruder
 
 // For direct drive extruder v9 set to true, for geared extruder set to false.
-#define INVERT_E0_DIR false
-#define INVERT_E1_DIR false
+#define INVERT_E0_DIR true
+#define INVERT_E1_DIR true
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
 
@@ -485,14 +497,17 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
   // Enable this to sample the bed in a grid (least squares solution)
   // Note: this feature generates 10KB extra code size
   #define AUTO_BED_LEVELING_GRID
-
+  // with AUTO_BED_LEVELING_GRID, the bed is sampled in a
+  // AUTO_BED_LEVELING_GRID_POINTSxAUTO_BED_LEVELING_GRID_POINTS grid
+  // and least squares solution is calculated
+  // Note: this feature occupies 10'206 byte
   #ifdef AUTO_BED_LEVELING_GRID
 
     // set the rectangle in which to probe
-    #define LEFT_PROBE_BED_POSITION 15
-    #define RIGHT_PROBE_BED_POSITION 170
-    #define FRONT_PROBE_BED_POSITION 20
-    #define BACK_PROBE_BED_POSITION 170
+    #define LEFT_PROBE_BED_POSITION 30
+    #define RIGHT_PROBE_BED_POSITION 200
+    #define FRONT_PROBE_BED_POSITION 70
+    #define BACK_PROBE_BED_POSITION 180
 
     #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 
@@ -510,6 +525,26 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
       #define ABL_PROBE_PT_2_Y 20
       #define ABL_PROBE_PT_3_X 170
       #define ABL_PROBE_PT_3_Y 20
+
+      // Check if Probe_Offset * Grid Points is greater than Probing Range
+      #if X_PROBE_OFFSET_FROM_EXTRUDER < 0
+        #if (-(X_PROBE_OFFSET_FROM_EXTRUDER * AUTO_BED_LEVELING_GRID_POINTS) >= (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION))
+	       #error "The X axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+	    #endif
+      #else
+        #if ((X_PROBE_OFFSET_FROM_EXTRUDER * AUTO_BED_LEVELING_GRID_POINTS) >= (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION))
+	       #error "The X axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+        #endif
+      #endif
+      #if Y_PROBE_OFFSET_FROM_EXTRUDER < 0
+        #if (-(Y_PROBE_OFFSET_FROM_EXTRUDER * AUTO_BED_LEVELING_GRID_POINTS) >= (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION))
+	       #error "The Y axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+	    #endif
+      #else
+        #if ((Y_PROBE_OFFSET_FROM_EXTRUDER * AUTO_BED_LEVELING_GRID_POINTS) >= (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION))
+	       #error "The Y axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+        #endif
+      #endif
 
   #endif // AUTO_BED_LEVELING_GRID
 
@@ -596,17 +631,17 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
  * MOVEMENT SETTINGS
  */
 
-#define HOMING_FEEDRATE {50*60, 50*60, 4*60, 0}  // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {50*60, 50*60, 15*60, 0}  // set the homing speeds (mm/min)
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,4000,500}  // default steps per unit for Ultimaker
-#define DEFAULT_MAX_FEEDRATE          {300, 300, 5, 25}    // (mm/sec)
-#define DEFAULT_MAX_ACCELERATION      {3000,3000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {44.3090,22.1545,1600,53.5}  // default steps per unit for Ultimaker
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 4, 25}    // (mm/sec)
+#define DEFAULT_MAX_ACCELERATION      {800,600,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000   // E acceleration in mm/s^2 for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3000    // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
+#define DEFAULT_ACCELERATION          600    // X, Y, Z and E acceleration in mm/s^2 for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  1000   // E acceleration in mm/s^2 for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   1000    // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK                20.0    // (mm/sec)
@@ -620,13 +655,16 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
 
 // @section more
 
+// Disable stepper drivers until voltage has stabilized
+#define STEPPER_RESET_FIX
+
 // Custom M code points
 #define CUSTOM_M_CODES
 #ifdef CUSTOM_M_CODES
   #ifdef ENABLE_AUTO_BED_LEVELING
     #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-    #define Z_PROBE_OFFSET_RANGE_MIN -20
-    #define Z_PROBE_OFFSET_RANGE_MAX 20
+    #define Z_PROBE_OFFSET_RANGE_MIN -15
+    #define Z_PROBE_OFFSET_RANGE_MAX 5
   #endif
 #endif
 
@@ -648,13 +686,13 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
 // @section temperature
 
 // Preheat Constants
-#define PLA_PREHEAT_HOTEND_TEMP 180
+#define PLA_PREHEAT_HOTEND_TEMP 190
 #define PLA_PREHEAT_HPB_TEMP 70
 #define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
-#define ABS_PREHEAT_HOTEND_TEMP 240
-#define ABS_PREHEAT_HPB_TEMP 110
-#define ABS_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
+#define ABS_PREHEAT_HOTEND_TEMP 230
+#define ABS_PREHEAT_HPB_TEMP 100
+#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
 //==============================LCD and SD support=============================
 // @section lcd
@@ -731,36 +769,6 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
 #define RIGIDPANEL
 
 //automatic expansion
-#if defined (MAKRPANEL)
- #define DOGLCD
- #define SDSUPPORT
- #define ULTIPANEL
- #define NEWPANEL
- #define DEFAULT_LCD_CONTRAST 17
-#endif
-
-#if defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
- #define DOGLCD
- #define U8GLIB_ST7920
- #define REPRAP_DISCOUNT_SMART_CONTROLLER
-#endif
-
-#if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
- #define ULTIPANEL
- #define NEWPANEL
-#endif
-
-#if defined(REPRAPWORLD_KEYPAD)
-  #define NEWPANEL
-  #define ULTIPANEL
-#endif
-#if defined(RA_CONTROL_PANEL)
- #define ULTIPANEL
- #define NEWPANEL
- #define LCD_I2C_TYPE_PCA8574
- #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
-#endif
-
 #if defined(RIGIDPANEL)
   #define ULTIPANEL
   #define SDSPEED  SPI_EIGHTH_SPEED        //  full/half/quarter/sixteenth, or 0-6 (0 = full speed)
@@ -843,6 +851,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic
 //
 // This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
 // Use M851 to set the z-probe vertical offset from the nozzle. Store that setting with M500.
+// Use M206 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
 //
 //#define SERVO_ENDSTOPS {-1, -1, 0} // Servo index for X, Y, Z. Disable with -1
 //#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 70,0} // X,Y,Z Axis Extend and Retract angles
