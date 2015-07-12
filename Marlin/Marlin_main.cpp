@@ -600,6 +600,11 @@ void setup() {
   setup_killpin();
   setup_filrunoutpin();
   setup_powerhold();
+
+  #ifdef STEPPER_RESET_FIX
+  disableStepperDrivers();
+  #endif
+
   MYSERIAL.begin(BAUDRATE);
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
@@ -917,6 +922,23 @@ void get_command() {
 
   #endif // SDSUPPORT
 }
+
+#ifdef STEPPER_RESET_PIN
+void disableStepperDrivers()
+{
+  pinMode(STEPPER_RESET_PIN, OUTPUT);    // set to output
+  digitalWrite(STEPPER_RESET_PIN, LOW);  // drive it down to hold in reset motor driver chips
+
+  return;
+}
+
+void enableStepperDrivers()
+{
+  pinMode(STEPPER_RESET_PIN, INPUT);     // set to input, which allows it to be pulled high by pullups
+
+  return;
+}
+#endif //STEPPER_RESET_PIN
 
 bool code_has_value() {
   int i = 1;
