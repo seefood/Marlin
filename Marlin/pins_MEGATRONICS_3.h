@@ -9,23 +9,15 @@
 #define LARGE_FLASH        true
 
 
-#ifdef Z_PROBE_SLED
+#if ENABLED(Z_PROBE_SLED)
   #define SLED_PIN         -1
 #endif
 
 // Servo support
-#ifdef NUM_SERVOS
-  #define SERVO0_PIN       46 //AUX3-6
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN     47 //AUX3-5
-    #if NUM_SERVOS > 2
-      #define SERVO2_PIN   48 //AUX3-4
-      #if NUM_SERVOS > 3
-        #define SERVO2_PIN 49 //AUX3-3
-      #endif
-    #endif
-  #endif
-#endif
+#define SERVO0_PIN         46 //AUX3-6
+#define SERVO1_PIN         47 //AUX3-5
+#define SERVO2_PIN         48 //AUX3-4
+#define SERVO2_PIN         49 //AUX3-3
 
 #define X_STEP_PIN         58
 #define X_DIR_PIN          57
@@ -76,7 +68,7 @@
 #define TEMP_2_PIN   (TEMP_SENSOR_2 == -1 ?   9 : 12) // ANALOG NUMBERING
 #define TEMP_BED_PIN (TEMP_SENSOR_BED == -1 ? 8 : 14) // ANALOG NUMBERING
 
-#define BEEPER 61
+#define BEEPER_PIN 61
 
 #define LCD_PINS_RS 32
 #define LCD_PINS_ENABLE 31
@@ -99,4 +91,4 @@
 #define BLEN_B 1
 #define BLEN_A 0
 
-#define SDCARDDETECT -1	// Megatronics does not use this port
+#define SD_DETECT_PIN -1	// Megatronics doesn't use this

@@ -6,7 +6,7 @@
 * When selecting the Russian language, a slightly different LCD implementation is used to handle UTF8 characters.
 **/
 
-//#ifndef REPRAPWORLD_KEYPAD
+//#if DISABLED(REPRAPWORLD_KEYPAD)
 //  extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
 //#else
   extern volatile uint8_t buttons;  //an extended version of the last checked buttons in a bit array.
@@ -19,7 +19,7 @@
 // macro name. The mapping is independent of whether the button is directly connected or
 // via a shift/i2c register.
 
-#ifdef ULTIPANEL
+#if ENABLED(ULTIPANEL)
 // All UltiPanels might have an encoder - so this is always be mapped onto first two bits
 #define BLEN_B 1
 #define BLEN_A 0
@@ -31,12 +31,12 @@
   // encoder click is directly connected
   #define BLEN_C 2 
   #define EN_C BIT(BLEN_C) 
-#endif 
+#endif
   
 //
 // Setup other button mappings of each panel
 //
-#if defined(LCD_I2C_VIKI)
+#if ENABLED(LCD_I2C_VIKI)
   #define B_I2C_BTN_OFFSET 3 // (the first three bit positions reserved for EN_A, EN_B, EN_C)
 
   // button and encoder bit positions within 'buttons'
@@ -57,7 +57,7 @@
   // I2C buttons take too long to read inside an interrupt context and so we read them during lcd_update
   #define LCD_HAS_SLOW_BUTTONS
 
-#elif defined(LCD_I2C_PANELOLU2)
+#elif ENABLED(LCD_I2C_PANELOLU2)
   // encoder click can be read through I2C if not directly connected
   #if BTN_ENC <= 0
     #define B_I2C_BTN_OFFSET 3 // (the first three bit positions reserved for EN_A, EN_B, EN_C)
@@ -72,7 +72,7 @@
     #define LCD_CLICKED (buttons&EN_C)
   #endif
 
-#elif defined(REPRAPWORLD_KEYPAD)
+#elif ENABLED(REPRAPWORLD_KEYPAD)
     // define register bit values, don't change it
     #define BLEN_REPRAPWORLD_KEYPAD_F3 0
     #define BLEN_REPRAPWORLD_KEYPAD_F2 1
@@ -99,7 +99,7 @@
     //#define REPRAPWORLD_KEYPAD_MOVE_Y_UP (buttons&EN_REPRAPWORLD_KEYPAD_UP)
     //#define REPRAPWORLD_KEYPAD_MOVE_HOME (buttons&EN_REPRAPWORLD_KEYPAD_MIDDLE)
 
-#elif defined(NEWPANEL)
+#elif ENABLED(NEWPANEL)
   #define LCD_CLICKED (buttons&EN_C)
 
 #else // old style ULTIPANEL
@@ -127,7 +127,7 @@
 
 ////////////////////////////////////
 // Create LCD class instance and chipset-specific information
-#if defined(LCD_I2C_TYPE_PCF8575)
+#if ENABLED(LCD_I2C_TYPE_PCF8575)
   // note: these are register mapped pins on the PCF8575 controller not Arduino pins
   #define LCD_I2C_PIN_BL  3
   #define LCD_I2C_PIN_EN  2
@@ -144,7 +144,7 @@
   #define LCD_CLASS LiquidCrystal_I2C
   LCD_CLASS lcd(LCD_I2C_ADDRESS,LCD_I2C_PIN_EN,LCD_I2C_PIN_RW,LCD_I2C_PIN_RS,LCD_I2C_PIN_D4,LCD_I2C_PIN_D5,LCD_I2C_PIN_D6,LCD_I2C_PIN_D7);
 
-#elif defined(LCD_I2C_TYPE_MCP23017)
+#elif ENABLED(LCD_I2C_TYPE_MCP23017)
   //for the LED indicators (which maybe mapped to different things in lcd_implementation_update_indicators())
   #define LED_A 0x04 //100
   #define LED_B 0x02 //010
@@ -155,30 +155,30 @@
   #include <Wire.h>
   #include <LiquidTWI2.h>
   #define LCD_CLASS LiquidTWI2
-  #if defined(DETECT_DEVICE)
+  #if ENABLED(DETECT_DEVICE)
     LCD_CLASS lcd(LCD_I2C_ADDRESS, 1);
   #else
     LCD_CLASS lcd(LCD_I2C_ADDRESS);
   #endif
 
-#elif defined(LCD_I2C_TYPE_MCP23008)
+#elif ENABLED(LCD_I2C_TYPE_MCP23008)
   #include <Wire.h>
   #include <LiquidTWI2.h>
   #define LCD_CLASS LiquidTWI2
-  #if defined(DETECT_DEVICE)
+  #if ENABLED(DETECT_DEVICE)
     LCD_CLASS lcd(LCD_I2C_ADDRESS, 1);
   #else
     LCD_CLASS lcd(LCD_I2C_ADDRESS);
   #endif
 
-#elif defined(LCD_I2C_TYPE_PCA8574)
+#elif ENABLED(LCD_I2C_TYPE_PCA8574)
     #include <LiquidCrystal_I2C.h>
     #define LCD_CLASS LiquidCrystal_I2C
     LCD_CLASS lcd(LCD_I2C_ADDRESS, LCD_WIDTH, LCD_HEIGHT);
 
 // 2 wire Non-latching LCD SR from:
 // https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
-#elif defined(SR_LCD_2W_NL)
+#elif ENABLED(SR_LCD_2W_NL)
   extern "C" void __cxa_pure_virtual() { while (1); }
   #include <LCD.h>
   #include <LiquidCrystal_SR.h>
@@ -193,7 +193,12 @@
 
 #include "utf_mapper.h"
 
-#ifdef LCD_PROGRESS_BAR
+#if ENABLED(SHOW_BOOTSCREEN)
+  static void bootscreen();
+  static bool show_bootscreen = true;
+#endif
+
+#if ENABLED(LCD_PROGRESS_BAR)
   static millis_t progress_bar_ms = 0;
   #if PROGRESS_MSG_EXPIRE > 0
     static millis_t expire_status_ms = 0;
@@ -202,7 +207,7 @@
 #endif
 
 static void lcd_set_custom_characters(
-  #ifdef LCD_PROGRESS_BAR
+  #if ENABLED(LCD_PROGRESS_BAR)
     bool progress_bar_set=true
   #endif
 ) {
@@ -287,7 +292,7 @@ static void lcd_set_custom_characters(
     B00000
   }; //thanks Sonny Mounicou
 
-  #ifdef LCD_PROGRESS_BAR
+  #if ENABLED(LCD_PROGRESS_BAR)
     static bool char_mode = false;
     byte progress[3][8] = { {
       B00000,
@@ -348,28 +353,28 @@ static void lcd_set_custom_characters(
 }
 
 static void lcd_implementation_init(
-  #ifdef LCD_PROGRESS_BAR
+  #if ENABLED(LCD_PROGRESS_BAR)
     bool progress_bar_set=true
   #endif
 ) {
 
-  #if defined(LCD_I2C_TYPE_PCF8575)
+  #if ENABLED(LCD_I2C_TYPE_PCF8575)
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
     #ifdef LCD_I2C_PIN_BL
       lcd.setBacklightPin(LCD_I2C_PIN_BL, POSITIVE);
       lcd.setBacklight(HIGH);
     #endif
 
-  #elif defined(LCD_I2C_TYPE_MCP23017)
+  #elif ENABLED(LCD_I2C_TYPE_MCP23017)
     lcd.setMCPType(LTI_TYPE_MCP23017);
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
     lcd.setBacklight(0); //set all the LEDs off to begin with
 
-  #elif defined(LCD_I2C_TYPE_MCP23008)
+  #elif ENABLED(LCD_I2C_TYPE_MCP23008)
     lcd.setMCPType(LTI_TYPE_MCP23008);
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
 
-  #elif defined(LCD_I2C_TYPE_PCA8574)
+  #elif ENABLED(LCD_I2C_TYPE_PCA8574)
     lcd.init();
     lcd.backlight();
 
@@ -377,8 +382,12 @@ static void lcd_implementation_init(
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
   #endif
 
+  #if ENABLED(SHOW_BOOTSCREEN)
+    if (show_bootscreen) bootscreen();
+  #endif
+
   lcd_set_custom_characters(
-    #ifdef LCD_PROGRESS_BAR
+    #if ENABLED(LCD_PROGRESS_BAR)
       progress_bar_set
     #endif
   );
@@ -404,6 +413,91 @@ char lcd_print(char* str) {
 
 unsigned lcd_print(char c) { return charset_mapper(c); }
 
+#if ENABLED(SHOW_BOOTSCREEN)
+  void lcd_erase_line(int line) {
+    lcd.setCursor(0, 3);
+    for (int i=0; i < LCD_WIDTH; i++)
+      lcd_print(' ');
+  }
+
+  // scrol the PSTR'text' in a 'len' wide field for 'time' milliseconds at position col,line
+  void lcd_scroll(int col, int line, const char * text, int len, int time) {
+    char tmp[LCD_WIDTH+1] = {0};
+    int n = max(lcd_strlen_P(text) - len, 0);
+    for (int i = 0; i <= n; i++) {
+      strncpy_P(tmp, text+i, min(len, LCD_WIDTH));
+      lcd.setCursor(col, line);
+      lcd_print(tmp);
+      delay(time / max(n, 1));
+    }
+  }
+
+  static void bootscreen() {
+    show_bootscreen = false;
+    byte top_left[8] = {
+      B00000,
+      B00000,
+      B00000,
+      B00000,
+      B00001,
+      B00010,
+      B00100,
+      B00100
+    };
+    byte top_right[8] = {
+      B00000,
+      B00000,
+      B00000,
+      B11100,
+      B11100,
+      B01100,
+      B00100,
+      B00100
+    };
+    byte botom_left[8] = {
+      B00100,
+      B00010,
+      B00001,
+      B00000,
+      B00000,
+      B00000,
+      B00000,
+      B00000
+    };
+    byte botom_right[8] = {
+      B00100,
+      B01000,
+      B10000,
+      B00000,
+      B00000,
+      B00000,
+      B00000,
+      B00000
+    };
+    lcd.createChar(0, top_left);
+    lcd.createChar(1, top_right);
+    lcd.createChar(2, botom_left);
+    lcd.createChar(3, botom_right);
+
+    lcd.clear();
+
+    #define TEXT_SCREEN_LOGO_SHIFT ((LCD_WIDTH/2) - 4)
+    lcd.setCursor(TEXT_SCREEN_LOGO_SHIFT, 0); lcd.print('\x00'); lcd_printPGM(PSTR( "------" ));  lcd.print('\x01');
+    lcd.setCursor(TEXT_SCREEN_LOGO_SHIFT, 1);                    lcd_printPGM(PSTR("|Marlin|"));
+    lcd.setCursor(TEXT_SCREEN_LOGO_SHIFT, 2); lcd.print('\x02'); lcd_printPGM(PSTR( "------" ));  lcd.print('\x03');
+
+    lcd_scroll(0, 3, PSTR("marlinfirmware.org"), LCD_WIDTH, 3000);
+
+    #ifdef STRING_SPLASH_LINE1
+      lcd_erase_line(3);
+      lcd_scroll(0, 3, PSTR(STRING_SPLASH_LINE1), LCD_WIDTH, 1000);
+    #endif
+    #ifdef STRING_SPLASH_LINE2
+      lcd_erase_line(3);
+      lcd_scroll(0, 3, PSTR(STRING_SPLASH_LINE2), LCD_WIDTH, 1000);
+    #endif
+  }
+#endif // SHOW_BOOTSCREEN
 /*
 Possible status screens:
 16x2   |000/000 B000/000|
@@ -499,7 +593,7 @@ static void lcd_implementation_status_screen() {
 
     #if LCD_WIDTH < 20
 
-      #ifdef SDSUPPORT
+      #if ENABLED(SDSUPPORT)
         lcd.setCursor(0, 2);
         lcd_printPGM(PSTR("SD"));
         if (IS_SD_PRINTING)
@@ -558,7 +652,7 @@ static void lcd_implementation_status_screen() {
     lcd.print(itostr3(feedrate_multiplier));
     lcd.print('%');
 
-    #if LCD_WIDTH > 19 && defined(SDSUPPORT)
+    #if LCD_WIDTH > 19 && ENABLED(SDSUPPORT)
 
       lcd.setCursor(7, 2);
       lcd_printPGM(PSTR("SD"));
@@ -591,7 +685,7 @@ static void lcd_implementation_status_screen() {
 
   lcd.setCursor(0, LCD_HEIGHT - 1);
 
-  #ifdef LCD_PROGRESS_BAR
+  #if ENABLED(LCD_PROGRESS_BAR)
 
     if (card.isFileOpen()) {
       // Draw the progress bar if the message has shown long enough
@@ -613,7 +707,7 @@ static void lcd_implementation_status_screen() {
       }
     } //card.isFileOpen
 
-  #elif defined(FILAMENT_LCD_DISPLAY)
+  #elif ENABLED(FILAMENT_LCD_DISPLAY)
 
     // Show Filament Diameter and Volumetric Multiplier %
     // After allowing lcd_status_message to show for 5 seconds
@@ -700,40 +794,44 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
   lcd_print(value);
 }
 
-static void lcd_implementation_drawmenu_sd(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename, uint8_t concat, char post_char) {
-  char c;
-  uint8_t n = LCD_WIDTH - concat;
-  lcd.setCursor(0, row);
-  lcd.print(sel ? '>' : ' ');
-  if (longFilename[0]) {
-    filename = longFilename;
-    longFilename[n] = '\0';
-  }
-  while ((c = *filename) && n > 0) {
-    n -= lcd_print(c);
-    filename++;
-  }
-  while (n--) lcd.print(' ');
-  lcd.print(post_char);
-}
+#if ENABLED(SDSUPPORT)
 
-static void lcd_implementation_drawmenu_sdfile(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename) {
-  lcd_implementation_drawmenu_sd(sel, row, pstr, filename, longFilename, 2, ' ');
-}
+  static void lcd_implementation_drawmenu_sd(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename, uint8_t concat, char post_char) {
+    char c;
+    uint8_t n = LCD_WIDTH - concat;
+    lcd.setCursor(0, row);
+    lcd.print(sel ? '>' : ' ');
+    if (longFilename[0]) {
+      filename = longFilename;
+      longFilename[n] = '\0';
+    }
+    while ((c = *filename) && n > 0) {
+      n -= lcd_print(c);
+      filename++;
+    }
+    while (n--) lcd.print(' ');
+    lcd.print(post_char);
+  }
 
-static void lcd_implementation_drawmenu_sddirectory(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename) {
-  lcd_implementation_drawmenu_sd(sel, row, pstr, filename, longFilename, 2, LCD_STR_FOLDER[0]);
-}
+  static void lcd_implementation_drawmenu_sdfile(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename) {
+    lcd_implementation_drawmenu_sd(sel, row, pstr, filename, longFilename, 2, ' ');
+  }
+
+  static void lcd_implementation_drawmenu_sddirectory(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename) {
+    lcd_implementation_drawmenu_sd(sel, row, pstr, filename, longFilename, 2, LCD_STR_FOLDER[0]);
+  }
+
+#endif //SDSUPPORT
 
 #define lcd_implementation_drawmenu_back(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, LCD_STR_UPLEVEL[0], LCD_STR_UPLEVEL[0])
 #define lcd_implementation_drawmenu_submenu(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', LCD_STR_ARROW_RIGHT[0])
 #define lcd_implementation_drawmenu_gcode(sel, row, pstr, gcode) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
 #define lcd_implementation_drawmenu_function(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
 
-#ifdef LCD_HAS_STATUS_INDICATORS
+#if ENABLED(LCD_HAS_STATUS_INDICATORS)
 
   static void lcd_implementation_update_indicators() {
-    #if defined(LCD_I2C_PANELOLU2) || defined(LCD_I2C_VIKI)
+    #if ENABLED(LCD_I2C_PANELOLU2) || ENABLED(LCD_I2C_VIKI)
       // Set the LEDS - referred to as backlights by the LiquidTWI2 library
       static uint8_t ledsprev = 0;
       uint8_t leds = 0;
@@ -752,17 +850,17 @@ static void lcd_implementation_drawmenu_sddirectory(bool sel, uint8_t row, const
 
 #endif // LCD_HAS_STATUS_INDICATORS
 
-#ifdef LCD_HAS_SLOW_BUTTONS
+#if ENABLED(LCD_HAS_SLOW_BUTTONS)
 
   extern millis_t next_button_update_ms;
 
   static uint8_t lcd_implementation_read_slow_buttons() {
-    #ifdef LCD_I2C_TYPE_MCP23017
+    #if ENABLED(LCD_I2C_TYPE_MCP23017)
       uint8_t slow_buttons;
       // Reading these buttons this is likely to be too slow to call inside interrupt context
       // so they are called during normal lcd_update
       slow_buttons = lcd.readButtons() << B_I2C_BTN_OFFSET; 
-      #ifdef LCD_I2C_VIKI
+      #if ENABLED(LCD_I2C_VIKI)
         if ((slow_buttons & (B_MI|B_RI)) && millis() < next_button_update_ms) // LCD clicked
           slow_buttons &= ~(B_MI|B_RI); // Disable LCD clicked buttons if screen is updated
       #endif

@@ -81,9 +81,7 @@
 #define MSG_MOTION                          "Bewegung"
 #define MSG_VOLUMETRIC                      "Filament"
 #define MSG_VOLUMETRIC_ENABLED              "E in mm³"
-#define MSG_FILAMENT_SIZE_EXTRUDER_0        "Filament D 1"
-#define MSG_FILAMENT_SIZE_EXTRUDER_1        "Filament D 2"
-#define MSG_FILAMENT_SIZE_EXTRUDER_2        "Filament D 3"
+#define MSG_FILAMENT_DIAM                   "Filament D"
 #define MSG_CONTRAST                        "LCD Kontrast"
 #define MSG_STORE_EPROM                     "EPROM speichern"
 #define MSG_LOAD_EPROM                      "EPROM laden"
@@ -124,8 +122,12 @@
 #define MSG_ENDSTOP_ABORT                   "Endstop Abbr. Ein"
 #define MSG_END_HOUR                        "Stunden"
 #define MSG_END_MINUTE                      "Minuten"
+#define MSG_HEATING                         "Aufheizen..."
+#define MSG_HEATING_COMPLETE                "Aufgeheizt"
+#define MSG_BED_HEATING                     "Bett aufheizen"
+#define MSG_BED_DONE                        "Bett aufgeheizt"
 
-#ifdef DELTA_CALIBRATION_MENU
+#if ENABLED(DELTA_CALIBRATION_MENU)
     #define MSG_DELTA_CALIBRATE             "Delta kalibrieren"
     #define MSG_DELTA_CALIBRATE_X           "Kalibriere X"
     #define MSG_DELTA_CALIBRATE_Y           "Kalibriere Y"
