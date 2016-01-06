@@ -17,7 +17,6 @@
 #define BOARD_RAMPS_13_SF       38   // RAMPS 1.3 (Power outputs: Spindle, Controller Fan)
 #define BOARD_FELIX2            37   // Felix 2.0+ Electronics Board (RAMPS like)
 #define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignment
-#define BOARD_RIGIDBOT          42   // RigidBot Ramps-like
 #define BOARD_RIGIDBOARD        42   // Invent-A-Part RigidBoard
 #define BOARD_RAMPS_14_EFB      43   // RAMPS 1.4 (Power outputs: Extruder, Fan, Bed)
 #define BOARD_RAMPS_14_EEB      44   // RAMPS 1.4 (Power outputs: Extruder0, Extruder1, Bed)
